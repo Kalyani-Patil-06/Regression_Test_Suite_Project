@@ -1,0 +1,101 @@
+const { spawn } = require('child_process');
+const path = require('path');
+const TestRun = require('../models/TestRun');
+
+const TESTING_ENGINE_PATH = path.resolve(__dirname, '../../testing-engine');
+
+/**
+ * Run tests and return results.
+ * Spawns Python runner.py which executes pytest and returns JSON results.
+ */
+const runTests = async (triggeredBy = 'manual', commitHash = '', targetUrl = '') => {
+  // Create a test run record
+  const testRun = new TestRun({
+    triggeredBy,
+    status: 'running',
+    startTime: new Date(),
+    commitHash
+  });
+  await testRun.save();
+
+  return new Promise((resolve, reject) => {
+    const envVars = { ...process.env, PYTHONIOENCODING: 'utf-8' };
+    if (targetUrl) {
+      envVars.TARGET_URL = targetUrl;
+    }
+
+    const pythonProcess = spawn('python', ['runner.py'], {
+      cwd: TESTING_ENGINE_PATH,
+      env: envVars,
+      shell: true
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    pythonProcess.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    pythonProcess.on('close', async (code) => {
+      try {
+        let results = [];
+        let totalTests = 0, passed = 0, failed = 0, skipped = 0;
+
+        // Try to parse the JSON output from runner.py
+        try {
+          const jsonOutput = JSON.parse(stdout.trim());
+          results = jsonOutput.results || [];
+          totalTests = jsonOutput.total || results.length;
+          passed = jsonOutput.passed || results.filter(r => r.status === 'passed').length;
+          failed = jsonOutput.failed || results.filter(r => r.status === 'failed').length;
+          skipped = jsonOutput.skipped || 0;
+        } catch (parseError) {
+          // If Python output isn't valid JSON, treat as failure
+          results = [{
+            testName: 'Test Suite',
+            status: code === 0 ? 'passed' : 'failed',
+            duration: 0,
+            errorMessage: stderr || stdout || 'Unknown error'
+          }];
+          totalTests = 1;
+          failed = code === 0 ? 0 : 1;
+          passed = code === 0 ? 1 : 0;
+        }
+
+        // Update the test run record
+        testRun.status = failed > 0 ? 'failed' : 'completed';
+        testRun.endTime = new Date();
+        testRun.totalTests = totalTests;
+        testRun.passed = passed;
+        testRun.failed = failed;
+        testRun.skipped = skipped;
+        testRun.results = results;
+        testRun.logs = stderr || stdout;
+        await testRun.save();
+
+        resolve(testRun);
+      } catch (err) {
+        testRun.status = 'failed';
+        testRun.endTime = new Date();
+        testRun.logs = `Error processing results: ${err.message}\nStdout: ${stdout}\nStderr: ${stderr}`;
+        await testRun.save();
+        reject(err);
+      }
+    });
+
+    pythonProcess.on('error', async (err) => {
+      testRun.status = 'failed';
+      testRun.endTime = new Date();
+      testRun.logs = `Process error: ${err.message}`;
+      await testRun.save();
+      reject(err);
+    });
+  });
+};
+
+module.exports = { runTests };
