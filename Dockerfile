@@ -6,22 +6,13 @@
 # --- Stage 1: Base image with Node + Python + Chrome ---
 FROM node:18-slim
 
-# Install Python, pip, and Chrome dependencies
+# Install Python, pip, and Chromium dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python3-venv \
-    wget \
-    gnupg \
-    curl \
-    unzip \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Google Chrome (stable)
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends google-chrome-stable \
+    chromium \
+    chromium-driver \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -45,7 +36,7 @@ EXPOSE 5000
 # Set environment variables
 ENV PORT=5000
 ENV PYTHONIOENCODING=utf-8
-ENV CHROME_BIN=/usr/bin/google-chrome
+ENV CHROME_BIN=/usr/bin/chromium
 
 # Start the backend server
 CMD ["node", "backend/server.js"]

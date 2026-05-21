@@ -9,6 +9,8 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
 
+import os
+
 @pytest.fixture(scope="session")
 def driver():
     """Create a shared Chrome WebDriver instance for the test session."""
@@ -19,7 +21,13 @@ def driver():
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920,1080")
 
-    service = Service(ChromeDriverManager().install())
+    # On Render (Linux), use the installed chromium-driver. Locally, use webdriver-manager.
+    if os.path.exists("/usr/bin/chromedriver"):
+        service = Service("/usr/bin/chromedriver")
+        chrome_options.binary_location = "/usr/bin/chromium"
+    else:
+        service = Service(ChromeDriverManager().install())
+        
     browser = webdriver.Chrome(service=service, options=chrome_options)
     browser.implicitly_wait(10)
 
@@ -38,7 +46,12 @@ def fresh_driver():
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920,1080")
 
-    service = Service(ChromeDriverManager().install())
+    if os.path.exists("/usr/bin/chromedriver"):
+        service = Service("/usr/bin/chromedriver")
+        chrome_options.binary_location = "/usr/bin/chromium"
+    else:
+        service = Service(ChromeDriverManager().install())
+        
     browser = webdriver.Chrome(service=service, options=chrome_options)
     browser.implicitly_wait(10)
 
