@@ -5,11 +5,11 @@ const TestRun = require('../models/TestRun');
 const TESTING_ENGINE_PATH = path.resolve(__dirname, '../../testing-engine');
 
 /**
- * Run tests and return results.
- * Spawns Python runner.py which executes pytest and returns JSON results.
+ * Trigger tests and return the initial run record immediately.
+ * The actual execution happens in the background to prevent HTTP timeouts.
  */
 const runTests = async (triggeredBy = 'manual', commitHash = '', targetUrl = '') => {
-  // Create a test run record
+  // Create a test run record immediately
   const testRun = new TestRun({
     triggeredBy,
     status: 'running',
@@ -18,7 +18,18 @@ const runTests = async (triggeredBy = 'manual', commitHash = '', targetUrl = '')
   });
   await testRun.save();
 
-  return new Promise((resolve, reject) => {
+  // Run the tests in the background (fire and forget)
+  executeTestsInBackground(testRun._id, targetUrl).catch(console.error);
+
+  // Return the record immediately so the UI doesn't timeout
+  return testRun;
+};
+
+const executeTestsInBackground = async (testRunId, targetUrl) => {
+  try {
+    const testRun = await TestRun.findById(testRunId);
+    if (!testRun) return;
+
     const envVars = { ...process.env, PYTHONIOENCODING: 'utf-8' };
     if (targetUrl) {
       envVars.TARGET_URL = targetUrl;
@@ -47,7 +58,6 @@ const runTests = async (triggeredBy = 'manual', commitHash = '', targetUrl = '')
         let results = [];
         let totalTests = 0, passed = 0, failed = 0, skipped = 0;
 
-        // Try to parse the JSON output from runner.py
         try {
           const jsonOutput = JSON.parse(stdout.trim());
           results = jsonOutput.results || [];
@@ -56,7 +66,6 @@ const runTests = async (triggeredBy = 'manual', commitHash = '', targetUrl = '')
           failed = jsonOutput.failed || results.filter(r => r.status === 'failed').length;
           skipped = jsonOutput.skipped || 0;
         } catch (parseError) {
-          // If Python output isn't valid JSON, treat as failure
           results = [{
             testName: 'Test Suite',
             status: code === 0 ? 'passed' : 'failed',
@@ -68,7 +77,6 @@ const runTests = async (triggeredBy = 'manual', commitHash = '', targetUrl = '')
           passed = code === 0 ? 1 : 0;
         }
 
-        // Update the test run record
         testRun.status = failed > 0 ? 'failed' : 'completed';
         testRun.endTime = new Date();
         testRun.totalTests = totalTests;
@@ -79,13 +87,11 @@ const runTests = async (triggeredBy = 'manual', commitHash = '', targetUrl = '')
         testRun.logs = stderr || stdout;
         await testRun.save();
 
-        resolve(testRun);
       } catch (err) {
         testRun.status = 'failed';
         testRun.endTime = new Date();
         testRun.logs = `Error processing results: ${err.message}\nStdout: ${stdout}\nStderr: ${stderr}`;
         await testRun.save();
-        reject(err);
       }
     });
 
@@ -94,9 +100,11 @@ const runTests = async (triggeredBy = 'manual', commitHash = '', targetUrl = '')
       testRun.endTime = new Date();
       testRun.logs = `Process error: ${err.message}`;
       await testRun.save();
-      reject(err);
     });
-  });
+
+  } catch (err) {
+    console.error('Background test execution failed:', err);
+  }
 };
 
 module.exports = { runTests };

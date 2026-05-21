@@ -11,12 +11,8 @@ router.post('/', async (req, res) => {
     const testRun = await runTests(triggeredBy, commitHash, targetUrl);
 
     res.json({
-      message: 'Test run completed',
-      runId: testRun._id,
-      status: testRun.status,
-      totalTests: testRun.totalTests,
-      passed: testRun.passed,
-      failed: testRun.failed
+      ...testRun.toObject(),
+      message: 'Test run started'
     });
   } catch (err) {
     res.status(500).json({ error: `Test execution failed: ${err.message}` });

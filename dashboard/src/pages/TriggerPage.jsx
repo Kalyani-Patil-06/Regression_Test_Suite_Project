@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { triggerTests } from '../services/api';
+import { triggerTests, getTestRun } from '../services/api';
 import LogViewer from '../components/LogViewer';
 
 export default function TriggerPage() {
@@ -15,9 +15,27 @@ export default function TriggerPage() {
     setResult(null);
 
     try {
-      const res = await triggerTests({ triggeredBy: 'manual', targetUrl });
-      setResult(res.data);
-      setLastRun(res.data);
+      // 1. Trigger the test run (this returns immediately with status: 'running')
+      const triggerRes = await triggerTests({ triggeredBy: 'manual', targetUrl });
+      const runId = triggerRes.data._id;
+      
+      // 2. Poll the backend every 3 seconds until it finishes
+      let currentStatus = 'running';
+      while (currentStatus === 'running') {
+        // Wait 3 seconds
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        // Check status
+        const statusRes = await getTestRun(runId);
+        const testRun = statusRes.data;
+        currentStatus = testRun.status;
+        
+        if (currentStatus !== 'running') {
+          setResult(testRun);
+          setLastRun(testRun);
+          break;
+        }
+      }
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Test execution failed');
     } finally {
