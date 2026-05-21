@@ -47,7 +47,7 @@ export default function TestRuns() {
       {runs.length === 0 ? (
         <div className="card">
           <div className="empty-state">
-            <div className="empty-icon">📋</div>
+            <div className="empty-icon">--</div>
             <h3>No test runs recorded</h3>
             <p>Trigger a test run to see results here</p>
           </div>

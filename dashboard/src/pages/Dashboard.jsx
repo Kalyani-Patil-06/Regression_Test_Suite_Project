@@ -47,25 +47,25 @@ export default function Dashboard() {
 
       <div className="stats-grid">
         <StatsCard
-          icon="🧪"
+          icon="T"
           value={stats?.totalTests || 0}
           label="Total Tests Executed"
           color="purple"
         />
         <StatsCard
-          icon="✅"
+          icon="P"
           value={stats?.totalPassed || 0}
           label="Tests Passed"
           color="green"
         />
         <StatsCard
-          icon="❌"
+          icon="F"
           value={stats?.totalFailed || 0}
           label="Tests Failed"
           color="red"
         />
         <StatsCard
-          icon="📈"
+          icon="%"
           value={`${stats?.passRate || 0}%`}
           label="Pass Rate"
           color="blue"
@@ -80,7 +80,7 @@ export default function Dashboard() {
         </h3>
         {recentRuns.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">🚀</div>
+            <div className="empty-icon">--</div>
             <h3>No test runs yet</h3>
             <p>Go to "Run Tests" to trigger your first test run</p>
           </div>

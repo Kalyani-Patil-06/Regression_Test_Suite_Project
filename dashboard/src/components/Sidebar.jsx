@@ -9,15 +9,15 @@ export default function Sidebar() {
       </div>
       <nav className="sidebar-nav">
         <NavLink to="/" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} end>
-          <span className="sidebar-icon">📊</span>
+          <span className="sidebar-icon">■</span>
           <span>Dashboard</span>
         </NavLink>
         <NavLink to="/runs" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
-          <span className="sidebar-icon">🧪</span>
+          <span className="sidebar-icon">▤</span>
           <span>Test Runs</span>
         </NavLink>
         <NavLink to="/trigger" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
-          <span className="sidebar-icon">🚀</span>
+          <span className="sidebar-icon">▶</span>
           <span>Run Tests</span>
         </NavLink>
       </nav>

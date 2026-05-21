@@ -109,7 +109,7 @@ export default function TriggerPage() {
           {error && (
             <div className="card" style={{ borderColor: 'rgba(255, 107, 107, 0.3)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--danger)' }}>
-                <span style={{ fontSize: '24px' }}>⚠️</span>
+                <span style={{ fontSize: '24px', fontWeight: 700 }}>!</span>
                 <div>
                   <h3 style={{ fontSize: '16px', marginBottom: '4px' }}>Test Execution Failed</h3>
                   <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{error}</p>

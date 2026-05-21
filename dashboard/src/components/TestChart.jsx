@@ -34,18 +34,18 @@ export default function TestChart({ data }) {
       {
         label: 'Passed',
         data: data.map(r => r.passed),
-        backgroundColor: 'rgba(0, 210, 160, 0.7)',
-        borderColor: '#00d2a0',
-        borderWidth: 1,
-        borderRadius: 4,
+        backgroundColor: 'rgba(5, 196, 107, 0.25)',
+        borderColor: '#05c46b',
+        borderWidth: 1.5,
+        borderRadius: 6,
       },
       {
         label: 'Failed',
         data: data.map(r => r.failed),
-        backgroundColor: 'rgba(255, 107, 107, 0.7)',
-        borderColor: '#ff6b6b',
-        borderWidth: 1,
-        borderRadius: 4,
+        backgroundColor: 'rgba(255, 94, 87, 0.25)',
+        borderColor: '#ff5e57',
+        borderWidth: 1.5,
+        borderRadius: 6,
       }
     ]
   };
@@ -57,30 +57,33 @@ export default function TestChart({ data }) {
       legend: {
         position: 'top',
         labels: {
-          color: '#a0a0b8',
-          font: { family: 'Inter', size: 12 },
-          boxWidth: 12,
-          padding: 16
+          color: '#a5a5cc',
+          font: { family: 'Plus Jakarta Sans', size: 12, weight: '600' },
+          boxWidth: 10,
+          boxHeight: 10,
+          padding: 20
         }
       },
       tooltip: {
-        backgroundColor: '#1a1a2e',
-        titleColor: '#f0f0f5',
-        bodyColor: '#a0a0b8',
-        borderColor: 'rgba(255,255,255,0.06)',
+        backgroundColor: '#0b0b14',
+        titleColor: '#f3f3f7',
+        bodyColor: '#a5a5cc',
+        borderColor: 'rgba(125, 95, 255, 0.15)',
         borderWidth: 1,
-        cornerRadius: 8,
-        padding: 12
+        cornerRadius: 10,
+        padding: 12,
+        titleFont: { family: 'Plus Jakarta Sans', weight: '700' },
+        bodyFont: { family: 'Plus Jakarta Sans' }
       }
     },
     scales: {
       x: {
-        grid: { color: 'rgba(255,255,255,0.04)' },
-        ticks: { color: '#6b6b80', font: { family: 'Inter', size: 11 } }
+        grid: { color: 'rgba(125, 95, 255, 0.05)' },
+        ticks: { color: '#64648c', font: { family: 'Plus Jakarta Sans', size: 11, weight: '500' } }
       },
       y: {
-        grid: { color: 'rgba(255,255,255,0.04)' },
-        ticks: { color: '#6b6b80', font: { family: 'Inter', size: 11 }, stepSize: 1 },
+        grid: { color: 'rgba(125, 95, 255, 0.05)' },
+        ticks: { color: '#64648c', font: { family: 'Plus Jakarta Sans', size: 11, weight: '500' }, stepSize: 1 },
         beginAtZero: true
       }
     }
