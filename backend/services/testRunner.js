@@ -24,7 +24,8 @@ const runTests = async (triggeredBy = 'manual', commitHash = '', targetUrl = '')
       envVars.TARGET_URL = targetUrl;
     }
 
-    const pythonProcess = spawn('python', ['runner.py'], {
+    const pythonCommand = process.platform === 'win32' ? 'python' : 'python3';
+    const pythonProcess = spawn(pythonCommand, ['runner.py'], {
       cwd: TESTING_ENGINE_PATH,
       env: envVars,
       shell: true
