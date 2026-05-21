@@ -1,18 +1,47 @@
-const mongoose = require('mongoose');
+const crypto = require('crypto');
 
-const actionSchema = new mongoose.Schema({
-  type: { type: String, enum: ['click', 'input', 'submit', 'navigate', 'scroll'], required: true },
-  selector: { type: String, default: '' },
-  value: { type: String, default: '' },
-  url: { type: String, default: '' },
-  timestamp: { type: Date, default: Date.now }
-});
+const interactions = [];
 
-const userInteractionSchema = new mongoose.Schema({
-  sessionId: { type: String, required: true },
-  url: { type: String, required: true },
-  actions: [actionSchema],
-  createdAt: { type: Date, default: Date.now }
-});
+class UserInteraction {
+  constructor(data) {
+    this._id = data._id || crypto.randomUUID();
+    this.sessionId = data.sessionId || '';
+    this.url = data.url || '';
+    this.actions = data.actions || [];
+    this.createdAt = data.createdAt || new Date();
+  }
 
-module.exports = mongoose.model('UserInteraction', userInteractionSchema);
+  async save() {
+    interactions.push(this);
+    return this;
+  }
+
+  static find(query = {}) {
+    let results = interactions.filter(r => {
+      for (const key in query) {
+        if (r[key] !== query[key]) return false;
+      }
+      return true;
+    });
+
+    return {
+      sort: (sortArgs) => {
+        if (sortArgs.createdAt === -1) {
+          results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        }
+        return {
+          limit: (limitArgs) => {
+            results = results.slice(0, limitArgs);
+            return {
+              then: (resolve) => resolve(results)
+            };
+          },
+          then: (resolve) => resolve(results)
+        };
+      },
+      then: (resolve) => resolve(results)
+    };
+  }
+}
+
+module.exports = UserInteraction;
