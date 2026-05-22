@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getTestRuns } from '../services/api';
+import { getTestRuns, downloadReport } from '../services/api';
 import LogViewer from '../components/LogViewer';
 
 export default function TestRuns() {
@@ -125,6 +125,16 @@ export default function TestRuns() {
                                 <LogViewer logs={run.logs} />
                               </div>
                             )}
+
+                            <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                              <button
+                                className="btn btn-primary"
+                                onClick={(e) => { e.stopPropagation(); downloadReport(run._id); }}
+                                style={{ fontSize: '13px', padding: '8px 20px' }}
+                              >
+                                ⬇ Download Report (CSV)
+                              </button>
+                            </div>
                           </div>
                         </td>
                       </tr>

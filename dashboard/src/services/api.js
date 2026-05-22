@@ -15,6 +15,10 @@ export const getChartData = () => api.get('/test-runs/stats/chart');
 // Test runs
 export const getTestRuns = () => api.get('/test-runs');
 export const getTestRun = (id) => api.get(`/test-runs/${id}`);
+export const downloadReport = (id) => {
+  const url = `${API_BASE}/test-runs/${id}/download`;
+  window.open(url, '_blank');
+};
 
 // Trigger
 export const triggerTests = (data = {}) => api.post('/trigger', data);
