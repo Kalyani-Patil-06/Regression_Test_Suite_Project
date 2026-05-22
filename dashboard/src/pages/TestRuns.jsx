@@ -132,7 +132,7 @@ export default function TestRuns() {
                                 onClick={(e) => { e.stopPropagation(); downloadReport(run._id); }}
                                 style={{ fontSize: '13px', padding: '8px 20px' }}
                               >
-                                ⬇ Download Report (CSV)
+                                ⬇ Download Report (PDF)
                               </button>
                             </div>
                           </div>
